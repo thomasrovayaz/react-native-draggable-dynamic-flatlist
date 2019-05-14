@@ -1,6 +1,5 @@
 # react-native-draggable-dynamic-flatlist
 A react native component that lets you drag and drop dynamic items of a FlatList
-
 Inspired by [react-native-draggable-flatlist](https://github.com/computerjazz/react-native-draggable-flatlist)
 
 ![Draggable FlatList demo]()
