@@ -9,6 +9,11 @@
   "keywords": [
     "react-native",
     "draggable",
+    "sortable",
+    "drag",
+    "drop",
+    "sort",
+    "list",
     "flatlist",
     "dynamic"
   ],
