@@ -5,7 +5,7 @@ A react native component that lets you drag and drop dynamic items of a FlatList
 
 ## Install
 
-1. `npm install react-native-draggable-dynamic-flatlist` or `yarn add react-native-draggable-flatlist`
+1. `npm install react-native-draggable-dynamic-flatlist` or `yarn add react-native-draggable-dynamic-flatlist`
 2. `import DraggableFlatList from 'react-native-draggable-dynamic-flatlist'`  
 
 ## Api
