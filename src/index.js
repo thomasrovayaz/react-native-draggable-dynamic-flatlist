@@ -426,7 +426,7 @@ class DraggableFlatList extends Component {
                 <FlatList
                     {...this.props}
                     ListHeaderComponent={this.renderHeaderComponent}
-                    removeClippedSubviews
+                    removeClippedSubviews={this.props.removeClippedSubviews}
                     scrollEnabled={this._tappedRow === -1}
                     ref={ref => this._flatList = ref}
                     renderItem={this.renderItem}
@@ -448,7 +448,8 @@ export default DraggableFlatList
 DraggableFlatList.defaultProps = {
     scrollPercent: 5,
     scrollSpeed: 10,
-    scaleSelectionFactor: 1.02
+    scaleSelectionFactor: 1.02,
+    removeClippedSubviews: false
 };
 
 class RowItem extends React.PureComponent {
