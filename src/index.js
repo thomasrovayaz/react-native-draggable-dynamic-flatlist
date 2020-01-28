@@ -406,7 +406,7 @@ class DraggableFlatList extends Component {
     keyExtractor = (item, index) => `sortable-flatlist-item-${index}`;
 
     render() {
-        const { horizontal, keyExtractor, onScroll } = this.props;
+        const { horizontal, keyExtractor } = this.props;
 
         return (
             <View
@@ -434,7 +434,6 @@ class DraggableFlatList extends Component {
                     keyExtractor={keyExtractor || this.keyExtractor}
                     onScroll={({ nativeEvent }) => {
                         this._scrollOffset = nativeEvent.contentOffset[horizontal ? 'x' : 'y'];
-                        if (onScroll) onScroll(nativeEvent);
                     } }
                     scrollEventThrottle={16}
                 />
