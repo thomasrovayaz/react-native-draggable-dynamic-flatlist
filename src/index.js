@@ -439,7 +439,7 @@ class DraggableFlatList extends Component {
     keyExtractor = (item, index) => `sortable-flatlist-item-${index}`;
 
     render() {
-        const { horizontal, keyExtractor } = this.props;
+        const { horizontal, keyExtractor, removeClippedSubviews } = this.props;
 
         return (
             <View
@@ -459,7 +459,7 @@ class DraggableFlatList extends Component {
                 <FlatList
                     {...this.props}
                     ListHeaderComponent={this.renderHeaderComponent}
-                    removeClippedSubviews={this.props.removeClippedSubviews}
+                    removeClippedSubviews={removeClippedSubviews}
                     scrollEnabled={this._tappedRow === -1}
                     ref={ref => this._flatList = ref}
                     renderItem={this.renderItem}
