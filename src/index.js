@@ -58,14 +58,22 @@ class DraggableFlatList extends Component {
         }
 
         this._panResponder = PanResponder.create({
-            onStartShouldSetPanResponderCapture: (evt, gestureState) => {
+            onStartShouldSetPanResponderCapture: (evt, {numberActiveTouches}) => {
+                if (numberActiveTouches > 1) {
+                    return true;
+                }
+                evt.persist();
                 this._currentEvent = evt;
                 return false
             },
             onMoveShouldSetPanResponder: (evt, gestureState) => {
                 const { horizontal } = this.props;
-                const { moveX, moveY } = gestureState;
+                const { moveX, moveY, numberActiveTouches } = gestureState;
                 const move = horizontal ? moveX : moveY;
+                if (numberActiveTouches > 1) {
+                    this.onRelease();
+                    return false;
+                }
                 const shouldSet = this._tappedRow > -1;
                 if (shouldSet) {
                     this._moveAnim.setValue(move);
@@ -74,43 +82,23 @@ class DraggableFlatList extends Component {
                 }
                 return shouldSet;
             },
-            onPanResponderMove: Animated.event([null, { [props.horizontal ? 'moveX' : 'moveY']: this._moveAnim }], {
-                listener: (evt, gestureState) => {
-                    const { moveX, moveY } = gestureState;
-                    const { horizontal } = this.props;
-                    this._move = horizontal ? moveX : moveY;
+            onPanResponderMove: (evt, gestureState) => {
+                if (gestureState.numberActiveTouches > 1) {
+                    this.onRelease();
+                    return;
                 }
-            }),
-            onPanResponderTerminationRequest: ({ nativeEvent }, gestureState) => false,
-            onPanResponderRelease: () => {
-                this._currentEvent = null;
-                if (this._tappedRow === -1) return;
-
-                const { horizontal } = this.props;
-                const { pageX, pageY, scrollOffset } = this._spacerLayout;
-                const position = horizontal ? pageX : pageY - this._scrollOffset + scrollOffset;
-                this._releaseVal = position - (this._containerOffset);
-                if (this._releaseAnim) this._releaseAnim.stop();
-                this._releaseAnim = Animated.parallel([
-                    // after decay, in parallel:
-                    Animated.spring(this._offset, {
-                        toValue: 0,
-                        stiffness: 5000,
-                        damping: 500,
-                        mass: 3,
-                        useNativeDriver: true,
-                    }),
-                    Animated.spring(this._moveAnim, {
-                        toValue: this._releaseVal,
-                        stiffness: 5000,
-                        damping: 500,
-                        mass: 3,
-                        useNativeDriver: true,
-                    }),
-                ]);
-
-                this._releaseAnim.start(this.onReleaseAnimationEnd)
-            }
+                Animated.event([null, { [props.horizontal ? 'moveX' : 'moveY']: this._moveAnim }], {
+                    listener: (evt, gestureState) => {
+                        const { moveX, moveY } = gestureState;
+                        const { horizontal } = this.props;
+                        this._move = horizontal ? moveX : moveY;
+                    }
+                })(evt, gestureState)
+            },
+            onPanResponderTerminationRequest: ({ nativeEvent }, gestureState) => {
+                return false;
+            },
+            onPanResponderRelease: this.onRelease
         });
         this.state = initialState
     }
@@ -135,6 +123,37 @@ class DraggableFlatList extends Component {
         }
     };
 
+    onRelease = () => {
+        if (this._currentEvent === null) return;
+        this._currentEvent = null;
+        if (this._tappedRow === -1) return;
+
+        const { horizontal } = this.props;
+        const { pageX, pageY, scrollOffset } = this._spacerLayout;
+        const position = horizontal ? pageX : pageY - this._scrollOffset + scrollOffset;
+        this._releaseVal = position - (this._containerOffset);
+        if (this._releaseAnim) this._releaseAnim.stop();
+        this._releaseAnim = Animated.parallel([
+            // after decay, in parallel:
+            Animated.spring(this._offset, {
+                toValue: 0,
+                stiffness: 5000,
+                damping: 500,
+                mass: 3,
+                useNativeDriver: true,
+            }),
+            Animated.spring(this._moveAnim, {
+                toValue: this._releaseVal,
+                stiffness: 5000,
+                damping: 500,
+                mass: 3,
+                useNativeDriver: true,
+            }),
+        ]);
+
+        this._releaseAnim.start(this.onReleaseAnimationEnd)
+    };
+
     move = (hoverComponent, index) => {
         const { onMoveBegin, data } = this.props;
         if (this._releaseAnim) {
@@ -150,10 +169,10 @@ class DraggableFlatList extends Component {
 
         this._tappedRow = index;
         this._spacerIndex = index;
-        this._nextIndex = index + 1;
-        this._previousIndex = index - 1;
+        this._nextIndex = this._spacerIndex + 1;
+        this._previousIndex = this._spacerIndex - 1;
 
-        if (this._currentEvent) {
+        if (this._currentEvent && this._currentEvent.nativeEvent) {
             const { pageX, pageY } = this._currentEvent.nativeEvent;
             const { horizontal } = this.props;
             this._tappedRowSize = this._size[this._tappedRow];
@@ -179,8 +198,8 @@ class DraggableFlatList extends Component {
         const { scrollPercent, scrollSpeed } = this.props;
         const scrollRatio = scrollPercent / 100;
         if (this._tappedRow === -1) return;
-        const shouldScrollUp = this._move < (this._containerSize * scrollRatio);
-        const shouldScrollDown = this._move > (this._containerSize * (1 - scrollRatio));
+        const shouldScrollUp = this._move - this._containerOffset < (this._containerSize * scrollRatio);
+        const shouldScrollDown = this._move - this._containerOffset > (this._containerSize * (1 - scrollRatio));
         if (shouldScrollUp) this.scroll(-scrollSpeed, this._spacerIndex);
         else if (shouldScrollDown) this.scroll(scrollSpeed, this._spacerIndex);
         this.getSpacerIndex(this._move);
@@ -322,25 +341,39 @@ class DraggableFlatList extends Component {
     };
 
     moveEnd = () => {
-        if (!this._hasMoved) this.setState(initialState)
+        if (!this._hasMoved) {
+            this._moveAnim.setValue(0);
+            this._spacerIndex = -1;
+            this._nextIndex = -1;
+            this._previousIndex = -1;
+            this._tappedRow = -1;
+            this._hasMoved = false;
+            this._move = 0;
+            this._releaseAnim = null;
+            this.setState(initialState);
+        }
     };
 
     renderItem = ({ item, index }) => {
-        const { renderItem, horizontal } = this.props;
+        const { renderItem, horizontal, data, spacerStyle } = this.props;
+        const _spacerIndex = this._tappedRow === data.length -1? this._spacerIndex-1: this._spacerIndex;
         const isActiveRow = this._tappedRow === index;
-        const isSpacerRow = this._previousIndex === index;
+        const isSpacerRow = _spacerIndex === index;
         const firstItem = this._noPrevious && this._tappedRow !== -1;
-        const spacerStyle = { [horizontal ? 'width' : 'height']: this._tappedRowSize };
 
         const spacer = (
             <View
-                style={spacerStyle}
+                style={{
+                    [horizontal ? 'width' : 'height']: this._tappedRowSize
+                }}
                 onLayout={e => {
                     this._spacerRef.measure((x, y, width, height, pageX, pageY) => {
                         this._spacerLayout = { x, y, width, height, pageX, pageY, scrollOffset: this._scrollOffset };
                     })
                 }}
-                ref={(ref) => { this._spacerRef = ref; }} />
+                ref={(ref) => { this._spacerRef = ref; }}>
+                <View style={spacerStyle} />
+            </View>
         );
 
         return (
@@ -448,7 +481,7 @@ export default DraggableFlatList
 DraggableFlatList.defaultProps = {
     scrollPercent: 5,
     scrollSpeed: 10,
-    scaleSelectionFactor: 1.02
+    scaleSelectionFactor: 0.95
 };
 
 class RowItem extends React.PureComponent {

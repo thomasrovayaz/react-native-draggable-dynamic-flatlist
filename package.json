@@ -1,6 +1,6 @@
 {
   "name": "react-native-draggable-dynamic-flatlist",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "A react native component that lets you drag and drop dynamic items of a FlatList.",
   "main": "src/index.js",
   "scripts": {
