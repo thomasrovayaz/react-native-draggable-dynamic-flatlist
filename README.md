@@ -23,6 +23,7 @@ Name | Type | Description
 `scaleSelectionFactor` | Number | Sets the scale factor of the selected item. 
 `onMoveEnd` | Function | `({ data, to, from, row }) => void` Returns updated ordering of `data` 
 `onMoveBegin` | Function | `(index) => void` Called when row becomes active.
+`spacerStyle` | View.style | Style of the spacer when an item is moved (ghost view)
 `removeClippedSubviews` | Boolean | Improve scroll performance for large lists. May have bugs (missing content) in some circumstances (Default `false`)
 
 ## Example
