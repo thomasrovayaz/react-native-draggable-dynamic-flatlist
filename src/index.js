@@ -304,7 +304,7 @@ class DraggableFlatList extends Component {
         const tappedRowSave = this._tappedRow;
         const from = this._tappedRow;
         const to = this._spacerIndex;
-        const sortedData = this.arrayMove(data, from, to);
+        const sortedData = this.arrayMove([...data], from, to);
         this._size = this.arrayMove(this._size, from, to);
         for (let i = 0; i < data.length; i++) {
             this._order[i] = i;
@@ -459,7 +459,7 @@ class DraggableFlatList extends Component {
                 <FlatList
                     {...this.props}
                     ListHeaderComponent={this.renderHeaderComponent}
-                    removeClippedSubviews
+                    removeClippedSubviews={this.props.removeClippedSubviews}
                     scrollEnabled={this._tappedRow === -1}
                     ref={ref => this._flatList = ref}
                     renderItem={this.renderItem}
@@ -481,7 +481,8 @@ export default DraggableFlatList
 DraggableFlatList.defaultProps = {
     scrollPercent: 5,
     scrollSpeed: 10,
-    scaleSelectionFactor: 0.95
+    scaleSelectionFactor: 0.95,
+    removeClippedSubviews: false
 };
 
 class RowItem extends React.PureComponent {

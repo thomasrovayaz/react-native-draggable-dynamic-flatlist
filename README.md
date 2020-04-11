@@ -5,7 +5,7 @@ A react native component that lets you drag and drop dynamic items of a FlatList
 
 ## Install
 
-1. `npm install react-native-draggable-dynamic-flatlist` or `yarn add react-native-draggable-flatlist`
+1. `npm install react-native-draggable-dynamic-flatlist` or `yarn add react-native-draggable-dynamic-flatlist`
 2. `import DraggableFlatList from 'react-native-draggable-dynamic-flatlist'`  
 
 ## Api
@@ -23,6 +23,7 @@ Name | Type | Description
 `scaleSelectionFactor` | Number | Sets the scale factor of the selected item. 
 `onMoveEnd` | Function | `({ data, to, from, row }) => void` Returns updated ordering of `data` 
 `onMoveBegin` | Function | `(index) => void` Called when row becomes active.
+`removeClippedSubviews` | Boolean | Improve scroll performance for large lists. May have bugs (missing content) in some circumstances (Default `false`)
 
 ## Example
 
@@ -78,3 +79,8 @@ class Example extends Component {
 
 export default Example
 ```
+## Main differences with react-native-draggable-flatlist
+
+react-native-draggable-flatlist is good but it doesn't work when item's sizes are changing. The positions (x and y) are not calculated properly. It's using measure functions which doesn't work perfectly on react-native, lot of unsolvable bugs (especially on android). Also, the measure function doesn't work when the item is hidden on a flatlist (out of the screen), so if you have big items, it doesn't work really well.
+The whole measuring system has been refactored by calculating all the positions manually.
+This library is using the onLayout property on each item and scrollview which makes it more stable with dynamic content. onLayout works perfectly on react-native and there is no more problem with dynamic content.
