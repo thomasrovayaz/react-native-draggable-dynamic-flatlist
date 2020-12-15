@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import {
-    YellowBox,
+    LogBox,
     Animated,
     FlatList,
     View,
@@ -10,7 +10,7 @@ import {
 } from 'react-native'
 
 // Measure function triggers false positives
-YellowBox.ignoreWarnings(['Warning: isMounted(...) is deprecated']);
+LogBox.ignoreLogs(['Warning: isMounted(...) is deprecated', 'Animated: `useNativeDriver` was not specified. This is a required option and must be explicitly set to `true` or `false`']);
 UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true);
 
 const initialState = {
