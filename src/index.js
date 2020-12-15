@@ -304,7 +304,7 @@ class DraggableFlatList extends Component {
         const tappedRowSave = this._tappedRow;
         const from = this._tappedRow;
         const to = this._spacerIndex;
-        const sortedData = this.arrayMove([...data], from, to);
+        const sortedData = this.arrayMove(data, from, to);
         this._size = this.arrayMove(this._size, from, to);
         for (let i = 0; i < data.length; i++) {
             this._order[i] = i;
